@@ -1,33 +1,22 @@
 <!DOCTYPE html>
 
 <!--Implemented:
-- Tooltip-->
+- Tooltip
+- Blue colored map
+- Legend-->
 <html> 
   <head>
-    <!-- Meta Tag -->
     <meta charset="utf-8">
     <script type= "text/javascript" src="https://d3js.org/d3.v5.min.js"></script> 
     <script type= "text/javascript" src="https://d3js.org/topojson.v3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
-    
   </head>
   <style>
         body {
           font: 13px sans-serif;
         }
 
-        .axis path,
-        .axis line {
-          fill: none;
-          stroke: #000;
-          shape-rendering: crispEdges;
-        }
-
-        .dot {
-          stroke: #000;
-        }
-
-        /*Add Tooltip Type here*/
+        /*tooltip style*/
         div.tooltip {	
             position: absolute;			
             text-align: center;
@@ -42,35 +31,32 @@
         }
   </style>
   <body>
-    <h1 style = "text-align:center; color:steelblue; font:20px sans-serif;"><bold>New Zealand Population Density, 2018</bold></h1>
+    <h1 style = "text-align:center; color:steelblue; font:20px sans-serif;"><bold>New Zealand Population Density, 2018-2019</bold></h1>
     <!-- Your D3.js code for making a Bar Graph -->
     <script type="text/javascript">
-        /*eslint-env es6*/
-        /*eslint-env browser*/
-        /*eslint no-console: 0*/
-        /*global d3 */
+        //Main Source: https://bl.ocks.org/mbostock/5562380
         var width = 960, 
-            height = 1100;
+            height = 1000;
         
+        //create SVG element
         var svg = d3.select("body").append("svg")
                     .attr("width", width)
                     .attr("height", height);
-        
-        var x = d3.scaleSqrt()
-                    .domain([0, 1804])
-                    .range([150, 1200]);
-        
         var g = svg.append("g")
                     .attr("class", "key")
                     .attr("transform", "translate(-100,40)");
         
+        //makes element for tooltip
         var div = d3.select("body")
                     .append("div")
                     .attr("class", "tooltip")
                     .style("opacity", 0);
         
-        var color = d3.scaleQuantile().domain([0, 0.2, 2, 3.8, 5.5, 9.2, 18.5, 35.7, 282.5, 1803.2]).range(d3.schemeBlues[9]); //got this range from printing these values in lines 109-111
+        //sets color
+        //got the values for the domain by printing these values from invertExtent (lines 99-101)
+        var color = d3.scaleQuantile().domain([0, 0.2, 2, 3.8, 5.5, 9.2, 18.5, 35.7, 282.5, 1803.2]).range(d3.schemeBlues[9]); 
         
+        //sets legend
         //used https://d3-legend.susielu.com/#symbol-ordinal plugin to create this legend
         svg.append("g")
             .attr("class", "legend")
@@ -83,15 +69,16 @@
         svg.select(".legend").call(legend);
         
         
-        //console.log('hmmm');
         var topology;
         var color;
+        
+        //parse through JSON file
         d3.json("gadm36_NZL_TOPO.json").then(_topology => {
             topology = _topology;
-            //console.log('hello');
             //var scale = 1;
             var districts = topojson.feature(topology, topology.objects.gadm36_NZL_2);
             
+            //creates project with Mercator
             var projection = d3.geoMercator()
             .translate([width/6, height / 8])
             .scale(2200)
@@ -114,6 +101,8 @@
             })*/
             
             //console.log(districts);
+            
+            //display districts with tooltip
             svg.append("g")
                 .selectAll("path")
                 .data(districts.features)
@@ -154,7 +143,14 @@
                 
         
     </script>
-    <h4 style="text-align: center; font:16px sans-serif;">Saujanya Mulukutla</h4>
+      <!-- Links --> 
+      <p> <a href="https://github.com/SaujanyaM/NewZealandPopDensity/blob/master/NewZealandPopDensity.html">Github Link</a></p>
+      <p> <a href="http://nzdotstat.stats.govt.nz/wbos/Index.aspx?DataSetCode=TABLECODE7501&_ga=2.96155930.729549277.1590655498-728992587.1590388142">Population Data</a></p>
+      <p> <a href="https://www.citypopulation.de/en/newzealand/admin/">Area Data</a></p>
+      <p>Saujanya Mulukutla</p>
+      <p>Instructor: Suresh Lodha</p>
+      <p>CSE 163: Data Programming for Visualization</p>
+      <p>Spring 2020</p>
   </body>
     
 </html>

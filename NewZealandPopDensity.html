@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<!--Implemented:
+- Tooltip-->
+<html> 
+  <head>
+    <!-- Meta Tag -->
+    <meta charset="utf-8">
+    <script type= "text/javascript" src="https://d3js.org/d3.v5.min.js"></script> 
+    <script type= "text/javascript" src="https://d3js.org/topojson.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
+    
+  </head>
+  <style>
+        body {
+          font: 13px sans-serif;
+        }
+
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
+
+        .dot {
+          stroke: #000;
+        }
+
+        /*Add Tooltip Type here*/
+        div.tooltip {	
+            position: absolute;			
+            text-align: center;
+            width: 228px;					
+            height: 73px;					
+            padding: 2px;				
+            font: 12px sans-serif;		
+            background: lightsteelblue;	
+            border: 0px;		
+            border-radius: 8px;			
+            pointer-events: none;			
+        }
+  </style>
+  <body>
+    <h1 style = "text-align:center; color:steelblue; font:20px sans-serif;"><bold>New Zealand Population Density, 2018</bold></h1>
+    <!-- Your D3.js code for making a Bar Graph -->
+    <script type="text/javascript">
+        /*eslint-env es6*/
+        /*eslint-env browser*/
+        /*eslint no-console: 0*/
+        /*global d3 */
+        var width = 960, 
+            height = 1100;
+        
+        var svg = d3.select("body").append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+        
+        var x = d3.scaleSqrt()
+                    .domain([0, 1804])
+                    .range([150, 1200]);
+        
+        var g = svg.append("g")
+                    .attr("class", "key")
+                    .attr("transform", "translate(-100,40)");
+        
+        var div = d3.select("body")
+                    .append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+        
+        var color = d3.scaleQuantile().domain([0, 0.2, 2, 3.8, 5.5, 9.2, 18.5, 35.7, 282.5, 1803.2]).range(d3.schemeBlues[9]); //got this range from printing these values in lines 109-111
+        
+        //used https://d3-legend.susielu.com/#symbol-ordinal plugin to create this legend
+        svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", "translate(70,70)");
+        
+        var legend = d3.legendColor()
+                        .labelFormat(d3.format(".1f"))
+                        .title("Population per square kilometer")
+                        .scale(color);
+        svg.select(".legend").call(legend);
+        
+        
+        //console.log('hmmm');
+        var topology;
+        var color;
+        d3.json("gadm36_NZL_TOPO.json").then(_topology => {
+            topology = _topology;
+            //console.log('hello');
+            //var scale = 1;
+            var districts = topojson.feature(topology, topology.objects.gadm36_NZL_2);
+            
+            var projection = d3.geoMercator()
+            .translate([width/6, height / 8])
+            .scale(2200)
+            .center([160,-35]);
+
+            var path = d3.geoPath()
+                  .projection(projection);
+            
+            //min = d3.min(districts.features, function(d){return d.properties.Density;});
+            //max = d3.max(districts.features, function(d){return d.properties.Density;});
+    
+            //color.domain(d3.range(min, max));
+            
+            allDensities = districts.features.map(function(d){return d.properties.Density;});
+            color.domain(allDensities);
+            //console.log(allDensities);
+            
+            /*color.range().forEach(function(d){
+	               console.log(color.invertExtent(d))
+            })*/
+            
+            //console.log(districts);
+            svg.append("g")
+                .selectAll("path")
+                .data(districts.features)
+                .enter()
+                .append("path")
+                .attr("fill", function(d) {
+                    return color(d.properties.Density);
+                })
+                .attr("d", path)
+                .on("mouseover", function (d) {
+                        div.transition()
+                            .duration(1)
+                            .style("opacity", 0.9);
+                        div.html( 
+                "<b>" + d.properties.NAME_2 + "</b>" +
+                "<table><tr><th align=left>" + "Population</th>" + "<th align=center>:</th>" + "<th align=right>" + d.properties.Population + "</th></tr>" + 
+                "<tr><th align=left>" + "Area</th>" + "<th align=center>:</th>"+ "<th align=right>" + d.properties.Area + " km<sup>2</sup>" + "</th></tr>" + 
+                "<tr><th align=left>" + "Population Density</th>" + "<th align=center>:</th>" + "<th align=right>" + d.properties.Density + "&nbsp/km<sup>2</sup></th></tr></table>")
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                })
+                .on("mouseout", function () {
+                    div.transition()
+                        .duration(1)
+                        .style("opacity", 0);
+                });;
+                    svg.append("path")
+                        .data(districts.features)
+                        .attr("fill", "none")
+                        .attr("stroke", "#000")
+                        .attr("stroke-opacity", 0.2)
+                        .attr("d", path);
+                    //console.log(districts.features[0].properties);
+                })
+        .catch(error => {
+            console.error(error);
+        });
+                
+        
+    </script>
+    <h4 style="text-align: center; font:16px sans-serif;">Saujanya Mulukutla</h4>
+  </body>
+    
+</html>

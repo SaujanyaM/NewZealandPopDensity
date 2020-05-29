@@ -73,7 +73,7 @@
         var color;
         
         //parse through JSON file
-        d3.json("gadm36_NZL_TOPO.json").then(_topology => {
+        d3.json("NewZealand.json").then(_topology => {
             topology = _topology;
             //var scale = 1;
             var districts = topojson.feature(topology, topology.objects.gadm36_NZL_2);
